@@ -52,7 +52,6 @@ static const char command[] = "delay ";  // Command to detect in receive buffer
 
 void main_demo(void)
 {
-     const TickType_t xTimerPeriod = mainTIMER_SEND_FREQUENCY_MS;
 
      /* Create the queues. */
     messageQUEUE = xQueueCreate(messageQUEUE_LENGTH, sizeof(Message));
