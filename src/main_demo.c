@@ -45,6 +45,8 @@ typedef struct Message {
 } Message;
 
 
+static const int buf_len = 255;          // Receiving buffer
+static const char command[] = "delay ";  // Command to detect in receive buffer
 
 /*-----------------------------------------------------------*/
 
