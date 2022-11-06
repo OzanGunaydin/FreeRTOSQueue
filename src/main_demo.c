@@ -193,13 +193,23 @@ static void updateDelayTask(void* pvParameters)
     Message msg;
     int delay = 0;
 
+    //Task delay rate in milliseconds
+    int taskDelayRateInMs = 0;
+
 
     for (; ; )
     {
+        //Convert milliseconds to tick periods
+        const TickType_t xDelay = taskDelayRateInMs / portTICK_PERIOD_MS;
         
+        vTaskDelay(xDelay);
+
         // Check if anything received without blocking, store in int
         if (xQueueReceive(delayQUEUE, (void*)&delay, 0) == pdTRUE) {
 
+            //Update task delay rate for next execution
+            taskDelayRateInMs = delay;
+            
             //Construct the message body to be sent back to Task A
             snprintf(msg.body, sizeof(msg.body), "Delayed by: %d", delay);
             
