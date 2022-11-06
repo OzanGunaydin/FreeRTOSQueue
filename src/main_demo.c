@@ -25,27 +25,32 @@
 /*-----------------------------------------------------------*/
 
  /*
+  * Task function declarations
   * The tasks as described in the comments at the top of this file.
+  *
   */
 static void doInputOutputTask(void* pvParameters);
 static void updateDelayTask(void* pvParameters);
 
 
+/* Delay Queue (Queue 1) from TASK A to TASK B */
+static QueueHandle_t delayQUEUE = NULL;
+
 /* Message Queue (Queue 2) from TASK B to TASK A*/
 static QueueHandle_t messageQUEUE = NULL;
 
 
-/* Delay Queue (Queue 1) from TASK A to TASK B */
-static QueueHandle_t delayQUEUE = NULL;
-
+/* Global Variables                                         */
+/*----------------------------------------------------------*/
 
 // Data Structure used in Message Queue
+// A Struct is used here to add flexibility for expansion
 typedef struct Message {
     char body[20];
 } Message;
 
 static const char command[] = "delay ";  // Command to detect in receive buffer
-static const int buf_length = 255;       // Receiving buffer
+static const int buf_length = 255;       // Receiving buffer length
 
 /*-----------------------------------------------------------*/
 
@@ -60,12 +65,12 @@ void main(void)
     if ((messageQUEUE != NULL) && (delayQUEUE != NULL))
     {
     
-        xTaskCreate(doInputOutputTask,             /* The function that implements the task. */
-            "SerialComms",                            /* The text name assigned to the task - for debug only as it is not used by the kernel. */
-            configMINIMAL_STACK_SIZE,              /* The size of the stack to allocate to the task. */
-            NULL,                                     /* The parameter passed to the task - not used in this simple case. */
+        xTaskCreate(doInputOutputTask,              /* The function that implements the task. */
+            "SerialComms",                           /* The text name assigned to the task - for debug only as it is not used by the kernel. */
+            configMINIMAL_STACK_SIZE,               /* The size of the stack to allocate to the task. */
+            NULL,                                    /* The parameter passed to the task - not used in this simple case. */
             mainQUEUE_RECEIVE_TASK_PRIORITY,        /* The priority assigned to the task. */
-            NULL);                               /* The task handle is not required, so NULL is passed. */
+            NULL);                                   /* The task handle is not required, so NULL is passed. */
 
         xTaskCreate(updateDelayTask,
             "DelayControl",
@@ -93,7 +98,8 @@ void main(void)
 
 static void doInputOutputTask(void* pvParameters)
 {
-
+    /*Local Task Variables                                  */
+    /*-------------------------------------------------------*/
     Message received_msg;
     uint8_t idx = 0;
     uint8_t cmd_length = strlen(command);
@@ -102,11 +108,10 @@ static void doInputOutputTask(void* pvParameters)
    
     int delay;
 
+    /*--------------------------------------------------------*/
+
     // Clear buffer
     memset(buf, 0, buf_length);
-
-
-    //printf("command length:%u", cmd_len);
 
     /* Prevent the compiler warning about the unused parameter. */
     (void)pvParameters;
@@ -146,7 +151,6 @@ static void doInputOutputTask(void* pvParameters)
             // Check if the delay plus space char is found
             if (memcmp(buf, command, cmd_length) == 0) {
         
-                printf("delay detected\n");
                 // Capture the char after the space 
                 char* tail = buf + cmd_length;
 
@@ -190,16 +194,19 @@ static void updateDelayTask(void* pvParameters)
     /* Prevent the compiler warning about the unused parameter. */
     (void)pvParameters;
 
+    /*Local Task Variables                                  */
+    /*-------------------------------------------------------*/
     Message msg;
     int delay = 0;
 
     //Task delay rate in milliseconds
     int taskDelayRateInMs = 0;
 
+    /*-------------------------------------------------------*/
 
     for (; ; )
     {
-        //Convert milliseconds to tick periods
+        //Convert milliseconds to tick periods for VTaskDelay
         const TickType_t xDelay = taskDelayRateInMs / portTICK_PERIOD_MS;
         
         vTaskDelay(xDelay);
@@ -209,7 +216,7 @@ static void updateDelayTask(void* pvParameters)
 
             //Update task delay rate for next execution
             taskDelayRateInMs = delay;
-            
+
             //Construct the message body to be sent back to Task A
             snprintf(msg.body, sizeof(msg.body), "Delayed by: %d", delay);
             
