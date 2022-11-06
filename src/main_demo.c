@@ -50,7 +50,7 @@ static const char command[] = "delay ";  // Command to detect in receive buffer
 
 /*-----------------------------------------------------------*/
 
-void main_demo(void)
+void main(void)
 {
 
      /* Create the queues. */
