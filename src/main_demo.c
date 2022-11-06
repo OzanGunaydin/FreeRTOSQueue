@@ -114,6 +114,10 @@ static void doInputOutputTask(void* pvParameters)
 
     for (; ; )
     {
+        //Add delay here to allow queue processing of Task B's messages 
+        //so it can be received here before being blocked by console input
+        vTaskDelay(1);
+
         
         // Check if anything received without blocking, store in Message.body
         // Print if back to console
@@ -126,7 +130,7 @@ static void doInputOutputTask(void* pvParameters)
         c = getchar();
        
         // Store the received character in buffer until buffer is full
-        if (idx < buf_length - 1) {
+        if ((c!=EOF) && (idx < buf_length - 1)) {
             buf[idx] = c;
             idx++;
         }
@@ -142,6 +146,7 @@ static void doInputOutputTask(void* pvParameters)
             // Check if the delay plus space char is found
             if (memcmp(buf, command, cmd_length) == 0) {
         
+                printf("delay detected\n");
                 // Capture the char after the space 
                 char* tail = buf + cmd_length;
 
