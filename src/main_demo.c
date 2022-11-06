@@ -44,9 +44,8 @@ typedef struct Message {
     char body[20];
 } Message;
 
-
-static const int buf_len = 255;          // Receiving buffer
 static const char command[] = "delay ";  // Command to detect in receive buffer
+static const int buf_length = 255;       // Receiving buffer
 
 /*-----------------------------------------------------------*/
 
@@ -94,10 +93,115 @@ void main(void)
 
 static void doInputOutputTask(void* pvParameters)
 {
+
+    Message received_msg;
+    uint8_t idx = 0;
+    uint8_t cmd_length = strlen(command);
+    char c;
+    char buf[255];
+   
+    int delay;
+
+    // Clear buffer
+    memset(buf, 0, buf_length);
+
+
+    //printf("command length:%u", cmd_len);
+
+    /* Prevent the compiler warning about the unused parameter. */
+    (void)pvParameters;
+
+
+    for (; ; )
+    {
+        
+        // Check if anything received without blocking, store in Message.body
+        // Print if back to console
+        if (xQueueReceive(messageQUEUE, (void*)&received_msg.body, 0) == pdTRUE) {
+            printf(received_msg.body);
+         
+        }
+
+        //Read characters from console
+        c = getchar();
+       
+        // Store the received character in buffer until buffer is full
+        if (idx < buf_length - 1) {
+            buf[idx] = c;
+            idx++;
+        }
+      
+        // If a newline character is received print it and process the buffer
+        // If delay command is detected send it via queue
+        // Reset buffer
+        if ((c == '\n') || (c == '\r')) {
+
+            putchar('\r');
+            putchar('\n');
+
+            // Check if the delay plus space char is found
+            if (memcmp(buf, command, cmd_length) == 0) {
+        
+                // Capture the char after the space 
+                char* tail = buf + cmd_length;
+
+                //Check if the character is a digit and store it as delay value
+                //If not a digit, the command is not valid
+                if (isdigit(tail[0]))
+                {
+                    delay = atoi(tail);
+                    delay = abs(delay);
+
+                    // Send the integer value to Task B
+                    xQueueSend(delayQUEUE, (void*)&delay, 10);                     
+                }
+                else
+                {
+                    printf("ERROR:Parameter not a number\n");
+
+                }
+               
+            }
+
+            // Reset buffer and counter
+            memset(buf, 0, buf_length);
+            idx = 0;
+
+        }
+        else if (c!=EOF)
+        {
+                // If not newline, echo character back to console
+        
+            putchar(c);
+        }
+    }
+
+    
 }
 
 
 static void updateDelayTask(void* pvParameters)
 {
-    
+    /* Prevent the compiler warning about the unused parameter. */
+    (void)pvParameters;
+
+    Message msg;
+    int delay = 0;
+
+
+    for (; ; )
+    {
+        
+        // Check if anything received without blocking, store in int
+        if (xQueueReceive(delayQUEUE, (void*)&delay, 0) == pdTRUE) {
+
+            //Construct the message body to be sent back to Task A
+            snprintf(msg.body, sizeof(msg.body), "Delayed by: %d", delay);
+            
+            //send to Queue
+            xQueueSend(messageQUEUE, (void*)&msg.body, 10);
+
+        }
+
+    }
 }
