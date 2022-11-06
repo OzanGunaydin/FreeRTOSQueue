@@ -29,8 +29,7 @@
 /*-----------------------------------------------------------
 * Application specific definitions.
 *
-* These definitions should be adjusted for your particular hardware and
-* application requirements.
+* These definitions are adjusted from FreeRTOS template for our Queue demo application.
 *
 * THESE PARAMETERS ARE DESCRIBED WITHIN THE 'CONFIGURATION' SECTION OF THE
 * FreeRTOS API DOCUMENTATION AVAILABLE ON THE FreeRTOS.org WEB SITE.  See

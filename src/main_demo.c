@@ -1,3 +1,33 @@
+/*
+===============================================================================
+* FreeRTOS Queue demo
+* 
+* Author: Ozan Gunaydin
+* Oct 2022
+================================================================================
+*
+ * main_demo() creates two queues and two tasks. It then
+ * starts the scheduler.
+ *
+ * Task A:
+ * Task A is implemented by the doInputOutputTask() function in
+ * this file. It reads the console input and echoes every character back. Meanwhile
+ * monitors if "delay X\n" received in the console input where X must be a digit. 
+ * When detected extracts the number and sends that number to Queue 1 (delay Queue).
+ * If delay command received without a number following it is not submitted to queue
+ * and an ERROR is printed. Also monitors Queue 2 (Message Queue) and prints everything 
+ * received to console output.
+ *
+ * Task B:
+ * The queue receive task is implemented by the updateDelayTask() function
+ * in this file.  updateDelayTask() waits for data to arrive on the queue 1 (delay
+ * queue). It keeps a local task delay rate variable and when data is received, 
+ * extracts the number from the queue and updates its local task delay rate. This
+ * delay rates adds a wait to the task in milliseconds. In addition sends 
+ * "Delayed by: X" String back to TASK A using Queue 2(Message Queue).
+ * 
+ * ============================================================================
+ */
 
 #include <stdio.h>
 #include <string.h>
@@ -95,7 +125,16 @@ void main(void)
 }
 /*-----------------------------------------------------------*/
 
-
+/*
+ * Function:  doInputOutputTask
+ * --------------------
+ *  Implements the Task A behaviour as described at the top of the file.
+ * 
+ * parameters:
+ *  void* pvParameters
+ * 
+ * returns:
+ */
 static void doInputOutputTask(void* pvParameters)
 {
     /*Local Task Variables                                  */
@@ -188,7 +227,16 @@ static void doInputOutputTask(void* pvParameters)
     
 }
 
-
+/*
+ * Function:  updateDelayTask
+ * --------------------
+ *  Implements the Task B behaviour as described at the top of the file.
+ * 
+ * parameters:
+ *  void* pvParameters
+ * 
+ * returns:
+ */
 static void updateDelayTask(void* pvParameters)
 {
     /* Prevent the compiler warning about the unused parameter. */

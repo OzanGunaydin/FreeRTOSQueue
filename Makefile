@@ -4,6 +4,8 @@ BIN                   := posix_demo
 BUILD_DIR             := ./build
 BUILD_DIR_ABS         := $(abspath $(BUILD_DIR))
 
+#This (FREERTOS_DIR_REL) is the only variable needs adjustment
+#Update this path to your FreeRTOS root directory
 FREERTOS_DIR_REL      := ../../FreeRTOS/FreeRTOS/FreeRTOS
 FREERTOS_DIR          := $(abspath $(FREERTOS_DIR_REL))
 
